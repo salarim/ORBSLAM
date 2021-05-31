@@ -1,8 +1,14 @@
 package pl.poznan.put.orbslam;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
@@ -17,6 +23,8 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
+
+import java.io.File;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -35,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @BindView(R.id.image_deald)
     ImageView imageDeald;
 
+    static private String TAG = "MYSLAM";
     private boolean isORBInitialised = false;
     private boolean isORBRunning = true;
     private boolean isImageGrabed = false;
@@ -42,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private double timestamp;
     long addr;
     int w,h;
+
 
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -82,6 +92,18 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             new Thread(new Runnable() {
                 @Override
                 public void run() {
+
+                    if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) !=
+                            PackageManager.PERMISSION_GRANTED) {
+                        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                1231);
+                    }
+
+                    if (checkSelfPermission(Manifest.permission.CAMERA) !=
+                            PackageManager.PERMISSION_GRANTED) {
+                        requestPermissions(new String[]{Manifest.permission.CAMERA},
+                                1232);
+                    }
 
                     initSystemWithParameters(Environment.getExternalStorageDirectory().getAbsolutePath() + "/ORBvoc.txt", Environment.getExternalStorageDirectory().getAbsolutePath() + "/TUM1.yaml");
                     runOnUiThread(new Runnable() {

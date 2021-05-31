@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    compileSdkVersion 28
+    buildToolsVersion "29.0.2"
     defaultConfig {
         applicationId "pl.poznan.put.orbslam"
-        minSdkVersion 10
-        targetSdkVersion 25
+        minSdkVersion 24
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -15,15 +15,15 @@ android {
                 cppFlags "-std=gnu++11 -pthread -frtti -fexceptions -D__cplusplus=201103L"
                 //'x86', 'x86_64', 'armeabi', 'armeabi-v7a', 'arm64-v8a', 'mips', 'mips64'
                 //abiFilters 'armeabi-v7a' //NEXUS and other new phones
-                abiFilters  'x86'
+                //abiFilters  'x86'
             }
         }
     }
-    sourceSets {
-        main {
-            jniLibs.srcDirs = ['\\home\\pgomola\\Dokumenty\\ORBSLAM\\app\\src\\main\\jniLibs']
-        }
-    }
+//    sourceSets {
+//        main {
+//            jniLibs.srcDirs = ['\\home\\pgomola\\Dokumenty\\ORBSLAM\\app\\src\\main\\jniLibs']
+//        }
+//    }
     buildTypes {
         release {
             minifyEnabled false
@@ -35,17 +35,21 @@ android {
             path "CMakeLists.txt"
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    ndkVersion '16.1.4479499'
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:25.2.0'
-    compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'
-    compile 'com.jakewharton:butterknife:8.5.1'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
-    testCompile 'junit:junit:4.12'
-    compile project(':openCVLibrary320')
+    implementation 'androidx.appcompat:appcompat:1.3.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'com.jakewharton:butterknife:10.2.3'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.3'
+    implementation project(':openCVLibrary320')
 }

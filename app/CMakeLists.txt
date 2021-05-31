@@ -1,9 +1,10 @@
-set(pathToProject /home/pgomola/Dokumenty/ORBSLAM)
-set(pathToOpenCv /home/pgomola/Dokumenty/ORBSLAM/app/OpenCV-android-sdk)
+set(pathToProject C:/Users/salari.m/Desktop/ORBSLAM)
+set(pathToOpenCv C:/Users/salari.m/Desktop/ORBSLAM/app/OpenCV-android-sdk)
 
 cmake_minimum_required(VERSION 3.4.1)
 
 set(CMAKE_VERBOSE_MAKEFILE on)
+message("Compiler Version: ${CMAKE_CXX_COMPILER_VERSION}")
 
 # MY NATIVE
 add_library( native-lib SHARED src/main/cpp/native-lib.cpp )
@@ -11,7 +12,7 @@ add_library( native-lib SHARED src/main/cpp/native-lib.cpp )
 # OPENCV
 include_directories(${pathToProject}/app/OpenCV-android-sdk/sdk/native/jni/include)
 add_library( lib_opencv SHARED IMPORTED )
-set_target_properties(lib_opencv PROPERTIES IMPORTED_LOCATION ${pathToProject}/app/src/main/jniLibs/${ANDROID_ABI}/libopencv_java3.so)
+set_target_properties(lib_opencv PROPERTIES IMPORTED_LOCATION ${pathToProject}/app/src/main/cmakeLibs/${ANDROID_ABI}/libopencv_java3.so)
 
 # NATIVE LOG LIB
 find_library( log-lib log )
@@ -191,8 +192,8 @@ ${pathToProject}/ORB_SLAM2/src/Sim3Solver.cc
 ${pathToProject}/ORB_SLAM2/src/Initializer.cc
 ${pathToProject}/ORB_SLAM2/src/Viewer.cc
 )
-target_link_libraries( ORBSLAM2 $\{log-lib} lib_opencv g2o DBoW2 ${boost_lib} android log EGL GLESv1_CM)
+target_link_libraries( ORBSLAM2 ${log-lib} lib_opencv g2o DBoW2 ${boost_lib} android log EGL GLESv1_CM)
 
 include_directories( ${pathToProject} )
 
-target_link_libraries( native-lib $\{log-lib} lib_opencv ORBSLAM2)
+target_link_libraries( native-lib ${log-lib} lib_opencv ORBSLAM2)
