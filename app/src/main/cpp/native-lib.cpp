@@ -8,7 +8,7 @@
 using namespace cv;
 #include <android/log.h>
 #define LOG_TAG "ORB_SLAM_SYSTEM"
-#define LOG(...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG, __VA_ARGS__)
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG, __VA_ARGS__)
 static ORB_SLAM2::System *s;
 bool init_end = false;
 
@@ -20,7 +20,7 @@ bool init_end = false;
 extern "C"
 JNIEXPORT void JNICALL
 Java_pl_poznan_put_orbslam_MainActivity_initSystemWithParameters(JNIEnv *env, jobject, jstring VOCPath, jstring calibrationPath) {
-    LOG("ORBSLAM INIT START");
+    LOGD("ORBSLAM INIT START");
     const char *calChar = env->GetStringUTFChars(calibrationPath, JNI_FALSE);
     const char *vocChar = env->GetStringUTFChars(VOCPath, JNI_FALSE);
     // use your string
@@ -30,13 +30,13 @@ Java_pl_poznan_put_orbslam_MainActivity_initSystemWithParameters(JNIEnv *env, jo
     env->ReleaseStringUTFChars(calibrationPath, calChar);
     env->ReleaseStringUTFChars(VOCPath, vocChar);
     init_end=true;
-    LOG("ORBSLAM INIT END");
+    LOGD("ORBSLAM INIT END");
 }
 
 extern "C"
 JNIEXPORT jintArray JNICALL
 Java_pl_poznan_put_orbslam_MainActivity_startCurrentORBForCamera(JNIEnv *env, jclass cls,jdouble timestamp, jlong addr,jint w,jint h) {
-    LOG("ORBSLAM CAMERA MEASSURE START");
+    LOGD("ORBSLAM CAMERA MEASSURE START");
     const cv::Mat *im = (cv::Mat *) addr;
     cv::Mat ima = s->TrackMonocular(*im, timestamp);
     jintArray resultArray = env->NewIntArray(ima.rows * ima.cols);
@@ -50,7 +50,7 @@ Java_pl_poznan_put_orbslam_MainActivity_startCurrentORBForCamera(JNIEnv *env, jc
     resultPtr[i * ima.cols + j] = 0xff000000 + (R << 16) + (G << 8) + B;
     }
     env->ReleaseIntArrayElements(resultArray, resultPtr, 0);
-    LOG("ORBSLAM CAMERA MEASSURE END");
+    LOGD("ORBSLAM CAMERA MEASSURE END");
     return resultArray;
 }
 
