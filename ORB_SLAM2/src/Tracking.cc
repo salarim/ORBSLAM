@@ -39,7 +39,25 @@
 #include "android/log.h"
 #define LOG_TAG "ORB_SLAM_TRACK"
 
-#define LOG(...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG, __VA_ARGS__)
+#       ifdef ANDROID
+// LOGS ANDROID
+#           include <android/log.h>
+#           define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG,__VA_ARGS__)
+#           define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG  , LOG_TAG,__VA_ARGS__)
+#           define LOGI(...) __android_log_print(ANDROID_LOG_INFO   , LOG_TAG,__VA_ARGS__)
+#           define LOGW(...) __android_log_print(ANDROID_LOG_WARN   , LOG_TAG,__VA_ARGS__)
+#           define LOGE(...) __android_log_print(ANDROID_LOG_ERROR  , LOG_TAG,__VA_ARGS__)
+#           define LOGSIMPLE(...)
+#       else
+// LOGS NO ANDROID
+#           include <stdio.h>
+#           define LOGV(...) printf("  ");printf(__VA_ARGS__); printf("\t -  <%s> \n", LOG_TAG);
+#           define LOGD(...) printf("  ");printf(__VA_ARGS__); printf("\t -  <%s> \n", LOG_TAG);
+#           define LOGI(...) printf("  ");printf(__VA_ARGS__); printf("\t -  <%s> \n", LOG_TAG);
+#           define LOGW(...) printf("  * Warning: "); printf(__VA_ARGS__); printf("\t -  <%s> \n", LOG_TAG);
+#           define LOGE(...) printf("  *** Error:  ");printf(__VA_ARGS__); printf("\t -  <%s> \n", LOG_TAG);
+#           define LOGSIMPLE(...) printf(" ");printf(__VA_ARGS__);
+#       endif // ANDROID
 
 using namespace std;
 
@@ -89,27 +107,27 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     mMinFrames = 0;
     mMaxFrames = fps;
 
-    cout << endl << "Camera Parameters: " << endl;
-    cout << "- fx: " << fx << endl;
-    cout << "- fy: " << fy << endl;
-    cout << "- cx: " << cx << endl;
-    cout << "- cy: " << cy << endl;
-    cout << "- k1: " << DistCoef.at<float>(0) << endl;
-    cout << "- k2: " << DistCoef.at<float>(1) << endl;
+    LOGD("\nCamera Parameters: ");
+    LOGD("- fx: %f", fx);
+    LOGD("- fy: %f", fy);
+    LOGD("- cx: %f", cx);
+    LOGD("- cy: %f", cy);
+    LOGD("- k1: %f", DistCoef.at<float>(0));
+    LOGD("- k2: %f", DistCoef.at<float>(1));
     if(DistCoef.rows==5)
-        cout << "- k3: " << DistCoef.at<float>(4) << endl;
-    cout << "- p1: " << DistCoef.at<float>(2) << endl;
-    cout << "- p2: " << DistCoef.at<float>(3) << endl;
-    cout << "- fps: " << fps << endl;
+        LOGD("- k3: %f", DistCoef.at<float>(4));
+    LOGD("- p1: %f", DistCoef.at<float>(2));
+    LOGD("- p2: %f", DistCoef.at<float>(3));
+    LOGD("- fps: %f", fps);
 
 
     int nRGB = fSettings["Camera.RGB"];
     mbRGB = nRGB;
 
     if(mbRGB)
-        cout << "- color order: RGB (ignored if grayscale)" << endl;
+        LOGD("- color order: RGB (ignored if grayscale)");
     else
-        cout << "- color order: BGR (ignored if grayscale)" << endl;
+        LOGD("- color order: BGR (ignored if grayscale)");
 
     // Load ORB parameters
 
@@ -127,17 +145,17 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     if(sensor==System::MONOCULAR)
         mpIniORBextractor = new ORBextractor(2*nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
 
-    cout << endl  << "ORB Extractor Parameters: " << endl;
-    cout << "- Number of Features: " << nFeatures << endl;
-    cout << "- Scale Levels: " << nLevels << endl;
-    cout << "- Scale Factor: " << fScaleFactor << endl;
-    cout << "- Initial Fast Threshold: " << fIniThFAST << endl;
-    cout << "- Minimum Fast Threshold: " << fMinThFAST << endl;
+    LOGD("\nORB Extractor Parameters: ");
+    LOGD("- Number of Features: %d", nFeatures);
+    LOGD("- Scale Levels: %d", nLevels);
+    LOGD("- Scale Factor: %f", fScaleFactor);
+    LOGD("- Initial Fast Threshold: %d", fIniThFAST);
+    LOGD("- Minimum Fast Threshold: %d", fMinThFAST);
 
     if(sensor==System::STEREO || sensor==System::RGBD)
     {
         mThDepth = mbf*(float)fSettings["ThDepth"]/fx;
-        cout << endl << "Depth Threshold (Close/Far Points): " << mThDepth << endl;
+        LOGD("\nDepth Threshold (Close/Far Points): %f", mThDepth);
     }
 
     if(sensor==System::RGBD)
@@ -478,7 +496,7 @@ void Tracking::Track()
         {
             if(mpMap->KeyFramesInMap()<=5)
             {
-                cout << "Track lost soon after initialisation, reseting..." << endl;
+                LOGD("Track lost soon after initialisation, reseting...");
                 mpSystem->Reset();
                 return;
             }
@@ -542,7 +560,7 @@ void Tracking::StereoInitialization()
             }
         }
 
-        cout << "New map created with " << mpMap->MapPointsInMap() << " points" << endl;
+        LOGD("New map created with %d points", mpMap->MapPointsInMap()) ;
 
         mpLocalMapper->InsertKeyFrame(pKFini);
 
@@ -616,7 +634,7 @@ void Tracking::MonocularInitialization()
         vector<bool> vbTriangulated; // Triangulated Correspondences (mvIniMatches)
         if(mpInitializer->Initialize(mCurrentFrame, mvIniMatches, Rcw, tcw, mvIniP3D, vbTriangulated))
         {
-        	LOG("mpInitializer->Initialize");
+        	LOGD("mpInitializer->Initialize");
             for(size_t i=0, iend=mvIniMatches.size(); i<iend;i++)
             {
                 if(mvIniMatches[i]>=0 && !vbTriangulated[i])
@@ -625,14 +643,14 @@ void Tracking::MonocularInitialization()
                     nmatches--;
                 }
             }
-            LOG("mpInitializer->Initialize======>");
+            LOGD("mpInitializer->Initialize======>");
             // Set Frame Poses
             mInitialFrame.SetPose(cv::Mat::eye(4,4,CV_32F));
             cv::Mat Tcw = cv::Mat::eye(4,4,CV_32F);
             Rcw.copyTo(Tcw.rowRange(0,3).colRange(0,3));
             tcw.copyTo(Tcw.rowRange(0,3).col(3));
             mCurrentFrame.SetPose(Tcw);
-            LOG("CreateInitialMapMonocular");
+            LOGD("CreateInitialMapMonocular");
             CreateInitialMapMonocular();
 
         }
@@ -686,8 +704,7 @@ void Tracking::CreateInitialMapMonocular()
     pKFcur->UpdateConnections();
 
     // Bundle Adjustment
-    LOG("New Map created with points");
-    cout << "New Map created with " << mpMap->MapPointsInMap() << " points" << endl;
+    LOGD("New Map created with %d points", mpMap->MapPointsInMap());
 
     Optimizer::GlobalBundleAdjustemnt(mpMap,20);
 
@@ -697,7 +714,7 @@ void Tracking::CreateInitialMapMonocular()
 
     if(medianDepth<0 || pKFcur->TrackedMapPoints(1)<100)
     {
-    	LOG("Wrong initialization, reseting...");
+    	LOGD("Wrong initialization, reseting...");
         Reset();
         return;
     }
@@ -738,7 +755,7 @@ void Tracking::CreateInitialMapMonocular()
     mpMapDrawer->SetCurrentCameraPose(pKFcur->GetPose());
 
     mpMap->mvpKeyFrameOrigins.push_back(pKFini);
-    LOG("mState=OK;");
+    LOGD("mState=OK;");
     mState=OK;
 }
 
@@ -1523,25 +1540,25 @@ bool Tracking::Relocalization()
 void Tracking::Reset()
 {
     mpViewer->RequestStop();
-    LOG("System Reseting");
-    cout << "System Reseting" << endl;
+    LOGD("System Reseting");
+    LOGD("System Reseting");
 //    while(!mpViewer->isStopped())
 //        usleep(3000);
 
     // Reset Local Mapping
-    cout << "Reseting Local Mapper...";
+    LOGD("Reseting Local Mapper...");
     mpLocalMapper->RequestReset();
-    cout << " done" << endl;
+    LOGD(" done");
 
     // Reset Loop Closing
-    cout << "Reseting Loop Closing...";
+    LOGD("Reseting Loop Closing...");
     mpLoopClosing->RequestReset();
-    cout << " done" << endl;
+    LOGD(" done");
 
     // Clear BoW Database
-    cout << "Reseting Database...";
+    LOGD("Reseting Database...");
     mpKeyFrameDB->clear();
-    cout << " done" << endl;
+    LOGD(" done");
 
     // Clear Map (this erase MapPoints and KeyFrames)
     mpMap->clear();
@@ -1562,7 +1579,7 @@ void Tracking::Reset()
     mlbLost.clear();
 
     mpViewer->Release();
-    LOG("mpViewer->Release();");
+    LOGD("mpViewer->Release();");
 }
 
 void Tracking::ChangeCalibration(const string &strSettingPath)
