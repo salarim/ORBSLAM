@@ -14,9 +14,14 @@ import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import android.opengl.GLES20;
+import android.opengl.GLSurfaceView;
+import android.opengl.GLSurfaceView.Renderer;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -26,10 +31,13 @@ import org.opencv.core.Mat;
 
 import java.io.File;
 
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
+public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2, Renderer {
 
     static {
         System.loadLibrary("native-lib");
@@ -147,6 +155,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             mOpenCvCameraView.setCvCameraViewListener(MainActivity.this);
         }
 
+        GLSurfaceView mapView = (GLSurfaceView) findViewById(R.id.gl_surface_view);
+        mapView.setRenderer(this);
+        mapView.setZOrderMediaOverlay(true);
     }
 
     @Override
@@ -202,4 +213,23 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     public native void initSystemWithParameters(String VOCPath,String calibrationPath);
 
     public native int[] startCurrentORBForCamera(double curTimeStamp,long addr,int w,int h);
+
+    public native static void glesInit();
+    public native static void glesRender();
+    public native static void glesResize(int width, int height);
+
+    @Override
+    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+        glesInit();
+    }
+
+    @Override
+    public void onSurfaceChanged(GL10 gl, int width, int height) {
+        glesResize(width, height);
+    }
+
+    @Override
+    public void onDrawFrame(GL10 gl) {
+        glesRender();
+    }
 }

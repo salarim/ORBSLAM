@@ -27,7 +27,7 @@
 #include <android/log.h>
 #define LOG_TAG "ORB_SLAM_SYSTEM"
 
-#define LOG(...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG, __VA_ARGS__)
+#define LOG(...) __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG, __VA_ARGS__)
 
 namespace ORB_SLAM2 {
 
@@ -96,6 +96,7 @@ void MapDrawer::DrawKeyFrames(const bool bDrawKF, const bool bDrawGraph) {
 	const float z = w * 0.6;
 
 	const vector<KeyFrame*> vpKFs = mpMap->GetAllKeyFrames();
+	LOG("KeyFrame size: %d", vpKFs.size());
 
 	if (bDrawKF) {
 		for (size_t i = 0; i < vpKFs.size(); i++) {

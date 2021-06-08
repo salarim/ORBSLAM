@@ -4,6 +4,7 @@
 #include<iostream>
 #include<fstream>
 #include<chrono>
+#include <GLES/gl.h>
 #include<System.h>
 using namespace cv;
 #include <android/log.h>
@@ -69,4 +70,40 @@ Java_pl_poznan_put_orbslam_MainActivity_validate(JNIEnv *env, jobject, jlong add
     cv::Mat();
     std::string hello2 = "Hello from validate";
     return env->NewStringUTF(hello2.c_str());
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_pl_poznan_put_orbslam_MainActivity_glesInit(JNIEnv *env, jclass cls) {
+    glShadeModel(GL_SMOOTH);
+
+    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+
+    glClearDepthf(1.0f);
+
+    glEnable(GL_DEPTH_TEST);
+
+    glDepthFunc(GL_LEQUAL);
+
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_pl_poznan_put_orbslam_MainActivity_glesRender(JNIEnv * env, jclass cls) {
+    glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glMatrixMode (GL_MODELVIEW);
+    glLoadIdentity ();
+    //glScalef (1.0, -1.0, 1.0);
+    if(init_end)
+        s->drawGL();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_pl_poznan_put_orbslam_MainActivity_glesResize(JNIEnv *env, jclass cls, jint width, jint height) {
+    glViewport (0,0,width,height);
+    glMatrixMode (GL_PROJECTION);
+    glLoadIdentity ();
+    glOrthof(-2, 2, 2, -2, -2, 2);
 }
